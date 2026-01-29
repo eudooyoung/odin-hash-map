@@ -1,15 +1,14 @@
 import LinkedList from "./linked-list.js";
-import Node from "./node.js";
 
-class HashMap {
+class HashSet {
   #loadFactor = 0;
   #capacity = 0;
   #buckets = [];
-  #length = 0;
+  #size = 0;
 
   constructor(capacity = 16, loadFactor = 0.75) {
-    this.#loadFactor = loadFactor;
     this.#capacity = capacity;
+    this.#loadFactor = loadFactor;
     this.#buckets = new Array(this.#capacity);
   }
 
@@ -17,7 +16,7 @@ class HashMap {
     let hashCode = 0;
 
     const primeNumber = 31;
-    for (let i = 0; i < key.length; i++) {
+    for (let i = 0; i < key.size; i++) {
       hashCode = (primeNumber * hashCode + key.charCodeAt(i)) % this.#capacity;
     }
 
@@ -29,53 +28,34 @@ class HashMap {
     this.#capacity *= 2;
     this.clear();
     for (let entry of entries) {
-      this.set(entry[0], entry[1]);
+      this.add(entry[0]);
     }
   }
 
-  /**
-   * if a bucket(linked list) exists for a given key,
-   *  if there exists a node of key is same as given,
-   *    remove the node and insert a new node with given key and value.
-   *  if not,
-   * @param {string} key given key
-   * @param {object} value given value
-   */
-  set(key, value) {
+  add(key) {
     if (typeof key !== "string") {
       throw new TypeError("type of key is explicitly to be string");
     }
 
     const hashCode = this.#hash(key);
     const bucket = this.#buckets[hashCode];
-    // if bucket exists
-    if (bucket) {
-      let i = 0;
-      while (i < bucket.size()) {
-        // if key matches
-        if (bucket.at(i).key === key) {
-          // update
-          bucket.removeAt(i);
-          bucket.append({ key, value });
-          // return without modifying length
+    // init bucket
+    if (!bucket) {
+      this.#buckets[hashCode] = new LinkedList();
+      this.#buckets[hashCode].append(key);
+    } else {
+      for (let i = 0; i < bucket.size(); i++) {
+        // if set contains the same key, return right away
+        if (bucket.at(i) === key) {
           return;
         }
-        i++;
       }
-      // bucket exists, but key doesn't match
-      bucket.append({ key, value });
-    }
-    // if bucket doesn't exist
-    else {
-      // init bucket
-      this.#buckets[hashCode] = new LinkedList();
-      this.#buckets[hashCode].append({ key, value });
+      // if no same key found under same bucket, append a new node
+      bucket.append(key);
     }
 
-    this.#length++;
-
-    // populate
-    if (this.currentLoadLevel() > this.#loadFactor) {
+    this.#size++;
+    if (this.currentLoader() > this.#loadFactor) {
       this.#populate();
     }
   }
@@ -89,15 +69,14 @@ class HashMap {
     const bucket = this.#buckets[hashCode];
 
     if (bucket) {
-      let i = 0;
-      while (i < bucket.size()) {
-        // handle duplicated hashCode with different keys
-        if (bucket.at(i).key === key) {
-          return bucket.at(i).value;
+      for (let i = 0; i < bucket.size(); i++) {
+        const element = bucket.at(i);
+        if (element === key) {
+          return element;
         }
-        i++;
       }
     }
+
     return null;
   }
 
@@ -108,13 +87,15 @@ class HashMap {
 
     const hashCode = this.#hash(key);
     const bucket = this.#buckets[hashCode];
+
     if (bucket) {
       for (let i = 0; i < bucket.size(); i++) {
-        if (bucket.at(i).key === key) {
+        if (bucket.at(i) === key) {
           return true;
         }
       }
     }
+
     return false;
   }
 
@@ -126,26 +107,25 @@ class HashMap {
     const hashCode = this.#hash(key);
     const bucket = this.#buckets[hashCode];
     if (bucket) {
-      let i = 0;
-      while (i < bucket.size()) {
-        if (bucket.at(i).key === key) {
+      for (let i = 0; i < bucket.size(); i++) {
+        if (bucket.at(i) === key) {
           bucket.removeAt(i);
-          this.#length--;
+          this.#size--;
           return true;
         }
-        i++;
       }
     }
+
     return false;
   }
 
-  length() {
-    return this.#length;
+  size() {
+    return this.#size;
   }
 
   clear() {
     this.#buckets = new Array(this.#capacity);
-    this.#length = 0;
+    this.#size = 0;
   }
 
   keys() {
@@ -153,7 +133,7 @@ class HashMap {
     for (let bucket of this.#buckets) {
       if (bucket) {
         for (let i = 0; i < bucket.size(); i++) {
-          keys.push(bucket.at(i).key);
+          keys.push(bucket.at(i));
         }
       }
     }
@@ -161,15 +141,7 @@ class HashMap {
   }
 
   values() {
-    const values = [];
-    for (let bucket of this.#buckets) {
-      if (bucket) {
-        for (let i = 0; i < bucket.size(); i++) {
-          values.push(bucket.at(i).value);
-        }
-      }
-    }
-    return values;
+    return this.keys();
   }
 
   entries() {
@@ -177,16 +149,16 @@ class HashMap {
     for (let bucket of this.#buckets) {
       if (bucket) {
         for (let i = 0; i < bucket.size(); i++) {
-          entries.push([bucket.at(i).key, bucket.at(i).value]);
+          entries.push([bucket.at(i)]);
         }
       }
     }
     return entries;
   }
 
-  currentLoadLevel() {
-    return this.#length / this.#capacity;
+  currentLoader() {
+    return this.#size / this.#capacity;
   }
 }
 
-export default HashMap;
+export default HashSet;

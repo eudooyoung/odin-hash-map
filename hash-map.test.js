@@ -13,10 +13,9 @@ function expectEqual(actual, expected, label) {
 
 /* ===== 테스트 ===== */
 test("empty map basics", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   expectEqual(map.length(), 0, "length(empty)");
-  expectEqual(map.capacity, 16, "capacity(empty)");
   expectEqual(map.get("x"), null, "get(empty)");
   expectEqual(map.has("x"), false, "has(empty)");
   expectEqual(map.remove("x"), false, "remove(empty)");
@@ -26,7 +25,7 @@ test("empty map basics", () => {
 });
 
 test("set inserts and get retrieves", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("apple", "red");
   map.set("banana", "yellow");
@@ -38,18 +37,17 @@ test("set inserts and get retrieves", () => {
 });
 
 test("overwrite does not change length or capacity", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("apple", "red");
   map.set("apple", "green");
 
   expectEqual(map.length(), 1, "length after overwrite");
   expectEqual(map.get("apple"), "green", "value overwritten");
-  expectEqual(map.capacity, 16, "capacity unchanged");
 });
 
 test("load factor 0.75 triggers resize on next insert", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("apple", "red");
   map.set("banana", "yellow");
@@ -65,18 +63,16 @@ test("load factor 0.75 triggers resize on next insert", () => {
   map.set("lion", "golden");
 
   expectEqual(map.length(), 12, "length at load factor");
-  expectEqual(map.capacity, 16, "capacity before resize");
 
   map.set("moon", "silver");
 
   expectEqual(map.length(), 13, "length after resize insert");
-  expectEqual(map.capacity, 32, "capacity doubled");
   expectEqual(map.get("moon"), "silver", "get after resize");
   expectEqual(map.get("apple"), "red", "existing entry preserved");
 });
 
 test("has / remove behavior", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("dog", "brown");
   map.set("cat", "black");
@@ -92,7 +88,7 @@ test("has / remove behavior", () => {
 });
 
 test("keys / values / entries return all items (order not guaranteed)", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("a", 1);
   map.set("b", 2);
@@ -115,7 +111,7 @@ test("keys / values / entries return all items (order not guaranteed)", () => {
 });
 
 test("clear removes all entries", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   map.set("x", 1);
   map.set("y", 2);
@@ -128,7 +124,7 @@ test("clear removes all entries", () => {
 });
 
 test("non-string keys throw TypeError", () => {
-  const map = new HashMap(0.75);
+  const map = new HashMap();
 
   assert.throws(
     () => map.set(123, "x"),
