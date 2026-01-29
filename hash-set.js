@@ -16,7 +16,7 @@ class HashSet {
     let hashCode = 0;
 
     const primeNumber = 31;
-    for (let i = 0; i < key.size; i++) {
+    for (let i = 0; i < key.length; i++) {
       hashCode = (primeNumber * hashCode + key.charCodeAt(i)) % this.#capacity;
     }
 
@@ -58,26 +58,6 @@ class HashSet {
     if (this.currentLoader() > this.#loadFactor) {
       this.#populate();
     }
-  }
-
-  get(key) {
-    if (typeof key !== "string") {
-      throw new TypeError("type of key is explicitly to be string");
-    }
-
-    const hashCode = this.#hash(key);
-    const bucket = this.#buckets[hashCode];
-
-    if (bucket) {
-      for (let i = 0; i < bucket.size(); i++) {
-        const element = bucket.at(i);
-        if (element === key) {
-          return element;
-        }
-      }
-    }
-
-    return null;
   }
 
   has(key) {
