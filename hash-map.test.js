@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import HashMap from "./hash-map.js";
-import { toNamespacedPath } from "node:path";
 
 /* ===== 공통 헬퍼 ===== */
 function expectEqual(actual, expected, label) {
@@ -14,10 +13,10 @@ function expectEqual(actual, expected, label) {
 
 /* ===== 테스트 ===== */
 test("empty map basics", () => {
-  const map = new HashMap();
+  const map = new HashMap(0.75);
 
   expectEqual(map.length(), 0, "length(empty)");
-  // expectEqual(map.capacity, 16, "capacity(empty)");
+  expectEqual(map.capacity, 16, "capacity(empty)");
   expectEqual(map.get("x"), null, "get(empty)");
   expectEqual(map.has("x"), false, "has(empty)");
   expectEqual(map.remove("x"), false, "remove(empty)");
@@ -27,7 +26,7 @@ test("empty map basics", () => {
 });
 
 test("set inserts and get retrieves", () => {
-  const map = new HashMap();
+  const map = new HashMap(0.75);
 
   map.set("apple", "red");
   map.set("banana", "yellow");
@@ -38,19 +37,19 @@ test("set inserts and get retrieves", () => {
   expectEqual(map.get("carrot"), null, "get missing");
 });
 
-toNamespacedPath("overwrite does not change length or capacity", () => {
-  const map = new HashMap();
+test("overwrite does not change length or capacity", () => {
+  const map = new HashMap(0.75);
 
   map.set("apple", "red");
   map.set("apple", "green");
 
   expectEqual(map.length(), 1, "length after overwrite");
   expectEqual(map.get("apple"), "green", "value overwritten");
-  // expectEqual(map.capacity, 16, "capacity unchanged");
+  expectEqual(map.capacity, 16, "capacity unchanged");
 });
 
-toNamespacedPath("load factor 0.75 triggers resize on next insert", () => {
-  const map = new HashMap();
+test("load factor 0.75 triggers resize on next insert", () => {
+  const map = new HashMap(0.75);
 
   map.set("apple", "red");
   map.set("banana", "yellow");
@@ -66,18 +65,18 @@ toNamespacedPath("load factor 0.75 triggers resize on next insert", () => {
   map.set("lion", "golden");
 
   expectEqual(map.length(), 12, "length at load factor");
-  // expectEqual(map.capacity, 16, "capacity before resize");
+  expectEqual(map.capacity, 16, "capacity before resize");
 
   map.set("moon", "silver");
 
   expectEqual(map.length(), 13, "length after resize insert");
-  // expectEqual(map.capacity, 32, "capacity doubled");
+  expectEqual(map.capacity, 32, "capacity doubled");
   expectEqual(map.get("moon"), "silver", "get after resize");
   expectEqual(map.get("apple"), "red", "existing entry preserved");
 });
 
-toNamespacedPath("has / remove behavior", () => {
-  const map = new HashMap();
+test("has / remove behavior", () => {
+  const map = new HashMap(0.75);
 
   map.set("dog", "brown");
   map.set("cat", "black");
@@ -92,8 +91,8 @@ toNamespacedPath("has / remove behavior", () => {
   expectEqual(map.remove("dog"), false, "remove non-existing");
 });
 
-toNamespacedPath("keys / values / entries return all items (order not guaranteed)", () => {
-  const map = new HashMap();
+test("keys / values / entries return all items (order not guaranteed)", () => {
+  const map = new HashMap(0.75);
 
   map.set("a", 1);
   map.set("b", 2);
@@ -115,8 +114,8 @@ toNamespacedPath("keys / values / entries return all items (order not guaranteed
   );
 });
 
-toNamespacedPath("clear removes all entries", () => {
-  const map = new HashMap();
+test("clear removes all entries", () => {
+  const map = new HashMap(0.75);
 
   map.set("x", 1);
   map.set("y", 2);
@@ -128,8 +127,8 @@ toNamespacedPath("clear removes all entries", () => {
   expectEqual(map.get("x"), null, "get after clear");
 });
 
-toNamespacedPath("non-string keys throw TypeError", () => {
-  const map = new HashMap();
+test("non-string keys throw TypeError", () => {
+  const map = new HashMap(0.75);
 
   assert.throws(
     () => map.set(123, "x"),
