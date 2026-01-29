@@ -1,4 +1,5 @@
-
+import LinkedList from "./linked-list.js";
+import Node from "./node.js";
 
 class HashMap {
   #loadFactor = 0;
@@ -6,10 +7,10 @@ class HashMap {
   #buckets = [];
   #length = 0;
 
-  constructor() {
-    this.#loadFactor = 0.75;
-    this.#capacity = 16;
-    this.#buckets = new Array(this.#capacity).fill(null);
+  constructor(capacity = 16, loadFactor = 0.75) {
+    this.#loadFactor = loadFactor;
+    this.#capacity = capacity;
+    this.#buckets = new Array(this.#capacity);
   }
 
   #hash(key) {
@@ -23,24 +24,81 @@ class HashMap {
     return hashCode;
   }
 
-  set(key, value) {
-    const hashCode = this.#hash(key);
-    this.#buckets[hashCode] = { key, value };
+  #populate() {
+    const entries = this.entries();
+    this.#capacity *= 2;
+    this.clear();
+    for (let entry of entries) {
+      this.set(entry[0], entry[1]);
+    }
+  }
 
-    if (++this.#length > this.#capacity * this.#loadFactor) {
-      const newBuckets = this.#buckets.concat(
-        new Array(this.#capacity).fill(null),
-      );
-      this.#capacity *= 2;
+  /**
+   * if a bucket(linked list) exists for a given key,
+   *  if there exists a node of key is same as given,
+   *    remove the node and insert a new node with given key and value.
+   *  if not,
+   * @param {string} key given key
+   * @param {object} value given value
+   */
+  set(key, value) {
+    if (typeof key !== "string") {
+      throw new TypeError("type of key is explicitly to be string");
+    }
+
+    const hashCode = this.#hash(key);
+    const bucket = this.#buckets[hashCode];
+    // if bucket exists
+    if (bucket) {
+      let i = 0;
+      while (i < bucket.size()) {
+        // if key matches
+        if (bucket.at(i).key === key) {
+          // update
+          bucket.removeAt(i);
+          bucket.append({ key, value });
+          // return without modifying length
+          return;
+        }
+        i++;
+      }
+      // bucket exists, but key doesn't match
+      bucket.append({ key, value });
+    }
+    // if bucket doesn't exist
+    else {
+      // init bucket
+      this.#buckets[hashCode] = new LinkedList();
+      this.#buckets[hashCode].append({ key, value });
+    }
+
+    this.#length++;
+
+    // populate
+    if (this.currentLoadLevel() > this.#loadFactor) {
+      this.#populate();
     }
   }
 
   get(key) {
-    const hashCode = this.#hash(key);
-    if (hashCode < 0 || hashCode >= this.#length) {
-      throw new Error("Trying to access index out of bounds");
+    if (typeof key !== "string") {
+      throw new TypeError("type of key is explicitly to be string");
     }
-    return this.#buckets[hashCode].value;
+
+    const hashCode = this.#hash(key);
+    const bucket = this.#buckets[hashCode];
+
+    if (bucket) {
+      let i = 0;
+      while (i < bucket.size()) {
+        // handle duplicated hashCode with different keys
+        if (bucket.at(i).key === key) {
+          return bucket.at(i).value;
+        }
+        i++;
+      }
+    }
+    return null;
   }
 
   has(key) {
@@ -50,12 +108,18 @@ class HashMap {
 
   remove(key) {
     const hashCode = this.#hash(key);
-    if (this.#buckets[hashCode]) {
-      this.#buckets[hashCode] = null;
-      this.#length--;
-      return true;
+    const bucket = this.#buckets[hashCode];
+    if (bucket) {
+      let i = 0;
+      while (i < bucket.size()) {
+        if (bucket.at(i).key === key) {
+          bucket.removeAt(i);
+          this.#length--;
+          return true;
+        }
+        i++;
+      }
     }
-
     return false;
   }
 
@@ -64,49 +128,49 @@ class HashMap {
   }
 
   clear() {
-    this.#buckets = new Array(this.#capacity).fill(null);
+    this.#buckets = new Array(this.#capacity);
     this.#length = 0;
   }
 
   keys() {
-    const keys = new Array(this.#length);
-    let i = 0;
+    const keys = [];
     for (let bucket of this.#buckets) {
       if (bucket) {
-        keys[i++] = bucket.key;
+        for (let i = 0; i < bucket.size(); i++) {
+          keys.push(bucket.at(i).key);
+        }
       }
     }
-
     return keys;
   }
 
   values() {
-    const values = new Array(this.#length);
-    let i = 0;
+    const values = [];
     for (let bucket of this.#buckets) {
       if (bucket) {
-        values[i++] = bucket.value;
+        for (let i = 0; i < bucket.size(); i++) {
+          values.push(bucket.at(i).value);
+        }
       }
     }
-
     return values;
   }
 
   entries() {
-    const entries = new Array(this.#length);
-    let i = 0;
+    const entries = [];
     for (let bucket of this.#buckets) {
       if (bucket) {
-        const entry = [bucket.key, bucket.value];
-        entries[i++] = entry;
+        for (let i = 0; i < bucket.size(); i++) {
+          entries.push([bucket.at(i).key, bucket.at(i).value]);
+        }
       }
     }
-
     return entries;
+  }
+
+  currentLoadLevel() {
+    return this.#length / this.#capacity;
   }
 }
 
-const map = new HashMap();
-map.set("Rama", 1);
-map.set("Sita", 2);
-console.log(map.entries());
+export default HashMap;
