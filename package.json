@@ -1,0 +1,27 @@
+{
+  "name": "odin-hash-map",
+  "version": "1.0.0",
+  "description": "odin toy project: hash map",
+  "main": "hash-map.js",
+  "scripts": {
+    "test": "jest --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eudooyoung/odin-hash-map.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eudooyoung/odin-hash-map/issues"
+  },
+  "homepage": "https://github.com/eudooyoung/odin-hash-map#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.29.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.3.0",
+    "jest": "^30.2.0"
+  }
+}
